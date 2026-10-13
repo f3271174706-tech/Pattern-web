@@ -1,5 +1,38 @@
 # Pattern-web MCP 生产记录
 
+## 当前发布：所有已保存图纸
+
+2026-10-13，按站点所有者“要公开所有图纸”的要求，合并 [PR #2](https://github.com/f3271174706-tech/Pattern-web/pull/2)，并补充动态元数据/SVG 的禁止缓存设置。
+
+- 当前发布：`/opt/perler-cloud/releases/20261013-210554-mard221-workbench`。
+- 部署代码提交：`732d0516afa7a353f519a4568b2f453daf499552`；PR 合并提交 `42b02acc5d66f265d945f4c4c46c244edf22b679`。
+- 最终源包 SHA-256：`34a9f77e155f6fd1dd878ddfbe290ad33c40dd0455cac571a6c237dfd3f83938`。
+- MCP 读取数据库实际保存的全部图纸当前修订，包含导入/新建/未来上传。删除后不再返回，没有硬编码的两张示例或启动时缓存。
+- 保留两个工具名和 API 路径；更新工具说明为全部图纸。只读元数据和 SVG 预览公开，完整矩阵、source、原始上传档案及凭据不经 MCP 返回，没有写入工具。
+- 本地和最终 Ubuntu 代码均 74/74 测试通过，TypeScript/Vite 构建通过；公网按工作台 API 逐张比较 ID、元数据并调用 get 全部通过。编辑、导出、重启持久化验收通过。
+- 官方 SDK 公网连接及全部保存图纸的列举/读取通过，Edge 工作台首页与极简控件正常，无脚本异常。
+- 本次部署前已有图纸数为 1，之后仍为 1，五张 SQLite 表原始行哈希不变，完整性正常。五项业务健康 200、五个 Tunnel 各 4 连接，失败 systemd 单元为 0。
+- 原 PUBLIC_ACCESS=true、持久 DB、工作台和 MARD 221 映射保留，没有更改网络配置。
+
+现有 ChatGPT 连接需要 Refresh 工具信息后开启新对话；仍使用 `https://perler.cloud/mcp`、No authentication。账号内实际对话验收尚未验证。
+
+当前回滚备份为 `/var/backups/perler-cloud/20261013-210554-mard221-workbench`，一致性备份为同路径加 `-preflight`。回滚仅切换应用，不覆盖现有 SQLite：
+
+```bash
+systemctl stop perler-cloud.service
+cp -a /var/backups/perler-cloud/20261013-210554-mard221-workbench/perler-cloud.service /etc/systemd/system/perler-cloud.service
+ln -s /opt/perler-cloud/releases/20261013-144501-mard221-workbench /opt/perler-cloud/current.rollback
+mv -Tf /opt/perler-cloud/current.rollback /opt/perler-cloud/current
+systemctl daemon-reload
+systemctl start perler-cloud.service
+systemctl start cloudflared-perler-cloud.service
+curl -fsS http://127.0.0.1:18040/api/v1/health
+```
+
+回滚到上次两张示例范围；未额外在正常生产服务执行回滚演练。以下记录保留第一次发布的结果及回滚点，当前状态以上述发布为准。
+
+## 第一次上线：历史记录
+
 2026-10-13，经用户明确确认后合并 [Pattern-web PR #1](https://github.com/f3271174706-tech/Pattern-web/pull/1)，没有部署废弃的 Perler.fzp.me。
 
 ## 代码与部署
