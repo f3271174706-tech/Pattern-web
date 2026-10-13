@@ -128,14 +128,44 @@ const importWrapper = {
     pattern: ref("BeadPattern"),
     rawJson: { type: "string" },
     importOptions: {
-      type: "object", additionalProperties: false, required: ["format", "paletteMode"],
-      properties: { format: { const: "legacy-grid-v1" }, paletteMode: { enum: ["source", "mard221"] } },
-      description: "Explicit legacy conversion. rawJson is required, archived verbatim, and converted again on the server to verify pattern equality.",
+      type: "object",
+      additionalProperties: false,
+      required: ["format", "paletteMode"],
+      properties: {
+        format: { const: "legacy-grid-v1" },
+        paletteMode: { enum: ["source", "mard221"] },
+      },
+      description:
+        "Explicit legacy conversion. rawJson is required, archived verbatim, and converted again on the server to verify pattern equality.",
     },
     originals: { type: "array", maxItems: 2, items: archive },
   },
 };
 const paths: Record<string, unknown> = {};
+paths["/examples"] = {
+  get: endpoint(
+    "List explicit public MARD examples (excludes workspace projects)",
+    undefined,
+    { security: [] },
+  ),
+};
+paths["/examples/{id}"] = {
+  parameters: [id],
+  get: endpoint("Read public example metadata", undefined, { security: [] }),
+};
+paths["/examples/{id}/preview.svg"] = {
+  parameters: [id],
+  get: endpoint("Read public example vector preview", undefined, {
+    security: [],
+    responses: {
+      "200": {
+        description: "Vector SVG",
+        content: { "image/svg+xml": { schema: { type: "string" } } },
+      },
+      ...errors,
+    },
+  }),
+};
 paths["/patterns"] = {
   get: endpoint("List projects"),
   post: endpoint(

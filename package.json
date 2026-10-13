@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.16.0" },
-  "workspaces": ["apps/*", "packages/*"],
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "concurrently -k -n API,WEB \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "tsx watch apps/api/src/server.ts",
@@ -20,6 +25,7 @@
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@fastify/static": "^10.1.6",
+    "@modelcontextprotocol/sdk": "1.32.1",
     "@pdf-lib/fontkit": "^1.1.1",
     "ajv": "^8.17.1",
     "fastify": "^5.6.0",

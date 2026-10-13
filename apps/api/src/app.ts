@@ -17,13 +17,18 @@ import type {
   Palette,
   Rect,
 } from "../../../packages/core/src/types";
-import { createMardDemo, createMardSmallDemo } from "../../../packages/core/src/mard-demo";
+import {
+  createMardDemo,
+  createMardSmallDemo,
+} from "../../../packages/core/src/mard-demo";
 import mard from "../../../examples/palettes/mard221.json";
 import provenance from "../../../examples/palettes/mard221.source.json";
 import { PatternStore, type ArchiveInput } from "./store";
 import { exportInWorker } from "./export-worker";
 import { openapi, editSchema } from "./openapi";
 import type { LegacyImportOptions } from "../../../packages/core/src/import-pattern";
+import { createPublicExampleCatalog } from "./public-examples";
+import { registerPublicMcp } from "./public-mcp";
 interface Options {
   store?: PatternStore;
   databasePath?: string;
@@ -101,6 +106,13 @@ export async function buildApp(options: Options = {}) {
       )
     )
       return;
+    if (
+      ["GET", "HEAD"].includes(req.method) &&
+      /^\/api\/v1\/examples(?:\/[^/]+(?:\/preview\.svg)?)?$/.test(
+        req.url.split("?")[0],
+      )
+    )
+      return;
     if (!token) return;
     const bearer = req.headers.authorization?.startsWith("Bearer ")
       ? req.headers.authorization.slice(7)
@@ -114,53 +126,49 @@ export async function buildApp(options: Options = {}) {
   });
   app.setErrorHandler<FastifyError>((error, req, reply) => {
     if (error instanceof DomainError)
-      return reply
-        .status(error.status)
-        .send({
-          error: {
-            code: error.code,
-            message: error.message,
-            path: error.path,
-            details: error.details,
-          },
-        });
-    if (error.validation)
-      return reply
-        .status(422)
-        .send({
-          error: {
-            code: "INVALID_REQUEST",
-            message: error.message,
-            path: error.validation[0]?.instancePath ?? "",
-            details: error.validation,
-          },
-        });
-    if (error.statusCode && error.statusCode < 500)
-      return reply
-        .status(error.statusCode)
-        .send({
-          error: {
-            code: error.code ?? "BAD_REQUEST",
-            message: error.message,
-            path: "",
-          },
-        });
-    req.log.error(error);
-    return reply
-      .status(500)
-      .send({
+      return reply.status(error.status).send({
         error: {
-          code: "INTERNAL_ERROR",
-          message: "服务器处理失败，请查看服务端日志",
+          code: error.code,
+          message: error.message,
+          path: error.path,
+          details: error.details,
+        },
+      });
+    if (error.validation)
+      return reply.status(422).send({
+        error: {
+          code: "INVALID_REQUEST",
+          message: error.message,
+          path: error.validation[0]?.instancePath ?? "",
+          details: error.validation,
+        },
+      });
+    if (error.statusCode && error.statusCode < 500)
+      return reply.status(error.statusCode).send({
+        error: {
+          code: error.code ?? "BAD_REQUEST",
+          message: error.message,
           path: "",
         },
       });
+    req.log.error(error);
+    return reply.status(500).send({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "服务器处理失败，请查看服务端日志",
+        path: "",
+      },
+    });
   });
   const prefix = "/api/v1";
   app.get(prefix + "/health", () => ({ status: "ok", schemaVersion: "1.0" }));
   app.get(prefix + "/config", () => ({
     authRequired: !!token,
-    mode: options.publicAccess ? "public" : token ? "authenticated" : "local-loopback",
+    mode: options.publicAccess
+      ? "public"
+      : token
+        ? "authenticated"
+        : "local-loopback",
     maxDimension: 500,
   }));
   app.post<{ Body: { token: string } }>(
@@ -217,6 +225,45 @@ export async function buildApp(options: Options = {}) {
   app.get(prefix + "/openapi.json", () => openapi);
   app.get(prefix + "/schema.json", () => patternSchema);
   app.get(prefix + "/palettes", () => [{ palette: mard, source: provenance }]);
+  const exampleOrigin = publicOrigin || `http://127.0.0.1:${process.env.PORT || 3001}`;
+  const examples = createPublicExampleCatalog(exampleOrigin);
+  app.get(prefix + "/examples", () => ({ examples: examples.list() }));
+  app.get<{ Params: { id: string } }>(
+    prefix + "/examples/:id",
+    (req, reply) => {
+      const example = examples.get(req.params.id);
+      return (
+        example ??
+        reply
+          .code(404)
+          .send({
+            error: {
+              code: "NOT_FOUND",
+              message: "公开示例不存在",
+              path: "/id",
+            },
+          })
+      );
+    },
+  );
+  app.get<{ Params: { id: string } }>(
+    prefix + "/examples/:id/preview.svg",
+    (req, reply) => {
+      const preview = examples.preview(req.params.id);
+      return preview
+        ? reply.type("image/svg+xml; charset=utf-8").send(preview)
+        : reply
+            .code(404)
+            .send({
+              error: {
+                code: "NOT_FOUND",
+                message: "公开示例不存在",
+                path: "/id",
+              },
+            });
+    },
+  );
+  await registerPublicMcp(app, examples, exampleOrigin);
   app.get(prefix + "/patterns", () => store.list());
   app.post<{ Body: unknown }>(prefix + "/patterns", async (req, reply) => {
     const body = req.body;
@@ -226,7 +273,8 @@ export async function buildApp(options: Options = {}) {
     if ("pattern" in body) {
       if (
         Object.keys(body).some(
-          (k) => !["pattern", "originals", "rawJson", "importOptions"].includes(k),
+          (k) =>
+            !["pattern", "originals", "rawJson", "importOptions"].includes(k),
         )
       )
         throw new DomainError("INVALID_REQUEST", "导入请求含未知字段", 422);
@@ -253,15 +301,13 @@ export async function buildApp(options: Options = {}) {
         wrapper.importOptions,
       );
     } else result = store.create(body);
-    return reply
-      .status(201)
-      .send({
-        ...result,
-        archiveNotice:
-          result.archives.length > 1
-            ? "原始 SVG/PDF 已归档；未验证其与 JSON 的视觉一致性。"
-            : undefined,
-      });
+    return reply.status(201).send({
+      ...result,
+      archiveNotice:
+        result.archives.length > 1
+          ? "原始 SVG/PDF 已归档；未验证其与 JSON 的视觉一致性。"
+          : undefined,
+    });
   });
   type Id = { Params: { id: string } };
   app.get<Id & { Querystring: { revision?: string } }>(
@@ -499,28 +545,24 @@ export async function buildApp(options: Options = {}) {
     await app.register(fastifyStatic, { root: web });
     app.setNotFoundHandler((req, reply) =>
       req.url.startsWith("/api/")
-        ? reply
-            .status(404)
-            .send({
-              error: {
-                code: "NOT_FOUND",
-                message: "接口不存在",
-                path: req.url,
-              },
-            })
+        ? reply.status(404).send({
+            error: {
+              code: "NOT_FOUND",
+              message: "接口不存在",
+              path: req.url,
+            },
+          })
         : reply.sendFile("index.html"),
     );
   } else
     app.setNotFoundHandler((req, reply) =>
-      reply
-        .status(404)
-        .send({
-          error: {
-            code: "NOT_FOUND",
-            message: "接口不存在；开发网页请访问 5173 端口",
-            path: req.url,
-          },
-        }),
+      reply.status(404).send({
+        error: {
+          code: "NOT_FOUND",
+          message: "接口不存在；开发网页请访问 5173 端口",
+          path: req.url,
+        },
+      }),
     );
   return app;
 }
