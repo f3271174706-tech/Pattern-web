@@ -13,7 +13,7 @@
   "paths": {
     "/examples": {
       "get": {
-        "summary": "List explicit public MARD examples (excludes workspace projects)",
+        "summary": "List all saved workspace pattern metadata, including imports",
         "security": [],
         "responses": {
           "200": {
@@ -82,7 +82,7 @@
         }
       ],
       "get": {
-        "summary": "Read public example metadata",
+        "summary": "Read current saved pattern metadata",
         "security": [],
         "responses": {
           "200": {
@@ -151,7 +151,7 @@
         }
       ],
       "get": {
-        "summary": "Read public example vector preview",
+        "summary": "Read current saved pattern vector preview",
         "security": [],
         "responses": {
           "200": {

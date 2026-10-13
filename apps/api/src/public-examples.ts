@@ -1,15 +1,22 @@
-import {
-  createMardDemo,
-  createMardSmallDemo,
-} from "../../../packages/core/src/mard-demo";
-import { calculateStats } from "../../../packages/core/src/index";
+import { calculateStats, DomainError } from "../../../packages/core/src/index";
 import { renderSvg } from "../../../packages/core/src/scene";
 import type { BeadPattern } from "../../../packages/core/src/types";
-// Explicit public catalog, independent of SQLite, imports and original archives.
-export function createPublicExampleCatalog(origin: string) {
-  const patterns = new Map(
-    [createMardSmallDemo(), createMardDemo()].map((p) => [p.patternId, p]),
-  );
+import type { PatternStore } from "./store";
+// Public by the owner's instruction: current workspace patterns, read-only.
+// Read pattern snapshots only; never expose store.state() or original archives.
+export function createPublicExampleCatalog(
+  origin: string,
+  store: Pick<PatternStore, "currentPatterns" | "get">,
+) {
+  const read = (id: string) => {
+    try {
+      return store.get(id);
+    } catch (error) {
+      if (error instanceof DomainError && error.code === "PATTERN_NOT_FOUND")
+        return null;
+      throw error;
+    }
+  };
   const metadata = (p: BeadPattern) => {
     const stats = calculateStats(p);
     return {
@@ -33,13 +40,13 @@ export function createPublicExampleCatalog(origin: string) {
     };
   };
   return {
-    list: () => Array.from(patterns.values(), metadata),
+    list: () => store.currentPatterns().map(metadata),
     get: (id: string) => {
-      const p = patterns.get(id);
+      const p = read(id);
       return p ? metadata(p) : null;
     },
     preview: (id: string) => {
-      const p = patterns.get(id);
+      const p = read(id);
       return p ? renderSvg(p, "", undefined, "plain") : null;
     },
   };

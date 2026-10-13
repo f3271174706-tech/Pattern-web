@@ -226,7 +226,7 @@ export async function buildApp(options: Options = {}) {
   app.get(prefix + "/schema.json", () => patternSchema);
   app.get(prefix + "/palettes", () => [{ palette: mard, source: provenance }]);
   const exampleOrigin = publicOrigin || `http://127.0.0.1:${process.env.PORT || 3001}`;
-  const examples = createPublicExampleCatalog(exampleOrigin);
+  const examples = createPublicExampleCatalog(exampleOrigin, store);
   app.get(prefix + "/examples", () => ({ examples: examples.list() }));
   app.get<{ Params: { id: string } }>(
     prefix + "/examples/:id",
@@ -239,7 +239,7 @@ export async function buildApp(options: Options = {}) {
           .send({
             error: {
               code: "NOT_FOUND",
-              message: "公开示例不存在",
+              message: "图纸不存在",
               path: "/id",
             },
           })
@@ -257,7 +257,7 @@ export async function buildApp(options: Options = {}) {
             .send({
               error: {
                 code: "NOT_FOUND",
-                message: "公开示例不存在",
+                message: "图纸不存在",
                 path: "/id",
               },
             });
