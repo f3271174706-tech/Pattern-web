@@ -111,6 +111,14 @@ export class PatternStore {
       archives: this.archives(id),
     };
   }
+  currentPatterns(): BeadPattern[] {
+    const rows = this.db
+      .prepare(
+        "SELECT r.data FROM patterns p JOIN revisions r ON r.pattern_id=p.id AND r.revision=p.current_revision ORDER BY r.created_at DESC,p.id ASC",
+      )
+      .all() as unknown as { data: string }[];
+    return rows.map((row) => JSON.parse(row.data) as BeadPattern);
+  }
   list() {
     return (
       this.db

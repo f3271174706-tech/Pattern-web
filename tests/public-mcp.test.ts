@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 import { buildApp } from "../apps/api/src/app";
 import { PatternStore } from "../apps/api/src/store";
 import { createSmallDemo } from "../packages/core/src/demo";
+import { createMardDemo, createMardSmallDemo } from "../packages/core/src/mard-demo";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import Fastify from "fastify";
@@ -15,9 +16,12 @@ const headers = {
 };
 beforeEach(async () => {
   store = new PatternStore(":memory:");
+  store.create(createMardSmallDemo());
+  store.create(createMardDemo());
   const user = createSmallDemo();
   user.patternId = "private-import";
-  user.title = "PRIVATE_IMPORT_SENTINEL";
+  user.title = "已上传图纸";
+  user.source = { producer: "PRIVATE_SOURCE_SENTINEL" };
   store.create(user);
   app = await buildApp({
     store,
@@ -92,7 +96,7 @@ it("advertises exactly two read-only tools and never exposes the internal write 
       (await rpc("tools/call", { name, arguments: {} })).json().error.code,
     ).toBe(-32602);
 });
-it("returns catalog metadata, paginates and excludes private imports, matrices, archives and secrets", async () => {
+it("lists all stored patterns, paginates, and limits output to metadata without archives or secrets", async () => {
   const response = await rpc(
     "tools/call",
     { name: "list_example_patterns", arguments: { limit: 1 } },
@@ -100,7 +104,7 @@ it("returns catalog metadata, paginates and excludes private imports, matrices, 
   );
   expect(response.json().id).toBe("list-id");
   const data = response.json().result.structuredContent;
-  expect(data).toMatchObject({ total: 2, offset: 0, limit: 1, hasMore: true });
+  expect(data).toMatchObject({ total: 3, offset: 0, limit: 1, hasMore: true });
   expect(data.examples).toHaveLength(1);
   const found = await rpc("tools/call", {
     name: "get_example_pattern",
@@ -110,7 +114,7 @@ it("returns catalog metadata, paginates and excludes private imports, matrices, 
     data.examples[0],
   );
   for (const value of [
-    "PRIVATE_IMPORT_SENTINEL",
+    "PRIVATE_SOURCE_SENTINEL",
     "PRIVATE_TOKEN_SENTINEL",
     "cells",
     "archives",
@@ -125,11 +129,17 @@ it("returns catalog metadata, paginates and excludes private imports, matrices, 
     (
       await rpc("tools/call", {
         name: "list_example_patterns",
-        arguments: { offset: 2 },
+        arguments: { offset: 3 },
       })
     ).json().result.structuredContent.examples,
   ).toEqual([]);
-  expect(store.list()).toHaveLength(1);
+  const all = (await rpc("tools/call", { name: "list_example_patterns", arguments: {} })).json().result.structuredContent;
+  expect(all.examples.map((p: { id: string }) => p.id).sort()).toEqual(store.list().map(p => p.id).sort());
+  expect(all.examples.find((p: { id: string }) => p.id === "private-import").title).toBe("已上传图纸");
+  const secondPage = (await rpc("tools/call", { name: "list_example_patterns", arguments: { offset: 1, limit: 2 } })).json().result.structuredContent;
+  expect(secondPage).toMatchObject({ total: 3, hasMore: false });
+  expect([data.examples[0], ...secondPage.examples]).toEqual(all.examples);
+  expect(store.list()).toHaveLength(3);
   expect(store.get("private-import").revision).toBe(1);
 });
 it.each([
@@ -146,8 +156,8 @@ it.each([
   expect(response.statusCode).toBe(200);
   expect(response.json().result.isError).toBe(true);
 });
-it.each(["private-import", "not-found", "../../.env"])(
-  "does not expose arbitrary project or file %s",
+it.each(["not-found", "../../.env"])(
+  "rejects unknown patterns or server file paths %s",
   async (id) => {
     const response = await rpc("tools/call", {
       name: "get_example_pattern",
@@ -260,13 +270,13 @@ it("validates Accept, content type, version, size and rejects GET/DELETE with 40
       (await app.inject({ method, url: "/mcp", headers })).statusCode,
     ).toBe(405);
 });
-it("keeps authenticated pattern APIs intact while publishing only explicit example metadata and vector previews", async () => {
+it("keeps authenticated editing APIs intact while publishing all current pattern metadata and vector previews", async () => {
   expect((await app.inject("/api/v1/patterns")).statusCode).toBe(401);
   const examples = await app.inject("/api/v1/examples");
   expect(examples.statusCode).toBe(200);
-  expect(examples.json().examples).toHaveLength(2);
+  expect(examples.json().examples).toHaveLength(3);
   expect((await app.inject("/api/v1/examples/private-import")).statusCode).toBe(
-    404,
+    200,
   );
   const preview = await app.inject(
     "/api/v1/examples/mard-demo-3x2/preview.svg",
@@ -274,6 +284,45 @@ it("keeps authenticated pattern APIs intact while publishing only explicit examp
   expect(preview.statusCode).toBe(200);
   expect(preview.body).toContain("<svg");
   expect(preview.body.match(/id="bead-/g)).toHaveLength(5);
+});
+it("reflects later imports, edits and deletions without restarting, and never returns archives or changes data", async () => {
+  const uploaded = createSmallDemo();
+  uploaded.patternId = "later-upload";
+  uploaded.title = "后来上传的图纸";
+  store.create(uploaded);
+  const snapshot = () => JSON.stringify(["patterns", "revisions", "archives", "idempotency", "exports"].map(table => store.db.prepare("SELECT * FROM " + table).all()));
+  const beforeRead = snapshot();
+  const listed = (await rpc("tools/call", { name: "list_example_patterns", arguments: {} })).json().result.structuredContent;
+  expect(listed.total).toBe(4);
+  const read = () => rpc("tools/call", { name: "get_example_pattern", arguments: { id: uploaded.patternId } });
+  const found = (await read()).json().result.structuredContent.example;
+  expect(found.title).toBe(uploaded.title);
+  expect(Object.keys(found).sort()).toEqual(["id", "title", "revision", "width", "height", "beadCount", "colorCount", "paletteId", "paletteVersion", "url", "previewUrl"].sort());
+  const svg = await app.inject(`/api/v1/examples/${uploaded.patternId}/preview.svg`);
+  expect(svg.statusCode).toBe(200);
+  expect(svg.body.match(/id="bead-/g)).toHaveLength(found.beadCount);
+  expect(snapshot()).toBe(beforeRead);
+  store.commit(uploaded.patternId, { baseRevision: 1, operations: [{ type: "set_cell", x: 1, y: 1, newColor: null }] });
+  const changed = (await read()).json().result.structuredContent.example;
+  expect(changed.revision).toBe(2);
+  expect(changed.beadCount).toBe(found.beadCount - 1);
+  const updatedSvg = await app.inject(`/api/v1/examples/${uploaded.patternId}/preview.svg`);
+  expect(updatedSvg.body.match(/id="bead-/g)).toHaveLength(changed.beadCount);
+  store.delete(uploaded.patternId);
+  expect((await read()).json().result.isError).toBe(true);
+  expect((await app.inject(`/api/v1/examples/${uploaded.patternId}/preview.svg`)).statusCode).toBe(404);
+  const remaining = (await rpc("tools/call", { name: "list_example_patterns", arguments: {} })).json().result.structuredContent;
+  expect(remaining.total).toBe(3);
+  expect(remaining.examples.some((p: { id: string }) => p.id === uploaded.patternId)).toBe(false);
+});
+it("uses the stored revision of built-in patterns and returns an empty catalog when all patterns are deleted", async () => {
+  store.commit("mard-demo-3x2", { baseRevision: 1, operations: [{ type: "set_cell", x: 1, y: 1, newColor: null }] });
+  const current = (await rpc("tools/call", { name: "get_example_pattern", arguments: { id: "mard-demo-3x2" } })).json().result.structuredContent.example;
+  expect(current).toMatchObject({ revision: 2, beadCount: 4 });
+  for (const p of store.list()) store.delete(p.id);
+  expect((await app.inject("/api/v1/examples")).json().examples).toEqual([]);
+  expect((await rpc("tools/call", { name: "list_example_patterns", arguments: {} })).json().result.structuredContent).toMatchObject({ total: 0, examples: [], hasMore: false });
+  expect((await app.inject("/api/v1/examples/mard-demo-3x2")).statusCode).toBe(404);
 });
 it("connects with the official Streamable HTTP client over a real socket", async () => {
   const address = await app.listen({ host: "127.0.0.1", port: 0 });

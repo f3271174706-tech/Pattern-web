@@ -55,11 +55,37 @@ assert(
 );
 const listed = await call("tools/call", {
   name: "list_example_patterns",
-  arguments: {},
+  arguments: { limit: 100 },
 });
 assert(!listed.isError);
-assert.equal(listed.structuredContent.total, 2);
-const example = listed.structuredContent.examples[0];
+const workspaceResponse = await fetch(new URL("/api/v1/patterns", origin), {
+  signal: AbortSignal.timeout(20000),
+});
+assert.equal(workspaceResponse.status, 200);
+const workspace = await workspaceResponse.json();
+const all = [...listed.structuredContent.examples];
+while (all.length < listed.structuredContent.total) {
+  const next = await call("tools/call", {
+    name: "list_example_patterns",
+    arguments: { limit: 100, offset: all.length },
+  });
+  assert(!next.isError);
+  assert.equal(next.structuredContent.total, listed.structuredContent.total);
+  assert(next.structuredContent.examples.length > 0);
+  all.push(...next.structuredContent.examples);
+}
+assert.deepEqual(all.map(p => p.id).sort(), workspace.map(p => p.id).sort());
+for (const pattern of all) {
+  const current = workspace.find(p => p.id === pattern.id);
+  for (const key of ["title", "revision", "width", "height", "beadCount", "colorCount"])
+    assert.equal(pattern[key], current[key]);
+  const result = await call("tools/call", { name: "get_example_pattern", arguments: { id: pattern.id } });
+  assert(!result.isError);
+  assert.deepEqual(result.structuredContent.example, pattern);
+}
+// Empty workspaces are valid; exercise get with a missing ID instead.
+const example = all[0];
+if (example) {
 const found = await call("tools/call", {
   name: "get_example_pattern",
   arguments: { id: example.id },
@@ -74,6 +100,10 @@ const preview = await fetch(new URL(publicPreview.pathname, origin), {
 assert.equal(preview.status, 200);
 assert.match(preview.headers.get("content-type"), /image\/svg\+xml/);
 assert.match(await preview.text(), /<svg\b/);
+} else {
+  const missing = await call("tools/call", { name: "get_example_pattern", arguments: { id: "missing-pattern" } });
+  assert(missing.isError);
+}
 const rejected = await fetch(endpoint, {
   method: "POST",
   headers: {
@@ -91,12 +121,13 @@ console.log(
     verifiedAt: new Date().toISOString(),
     protocolVersion: initialized.protocolVersion,
     tools: tools.map((t) => t.name),
-    publicExamples: listed.structuredContent.total,
+    publicPatterns: listed.structuredContent.total,
     checks: [
       "initialize",
       "empty initialized notification ACK",
       "tools/list",
       "both readonly tools/call",
+      "every saved workspace pattern listed and readable",
       "public SVG preview",
       "Origin rejection",
       "no session or cookie required",

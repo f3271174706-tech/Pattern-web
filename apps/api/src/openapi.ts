@@ -144,18 +144,18 @@ const importWrapper = {
 const paths: Record<string, unknown> = {};
 paths["/examples"] = {
   get: endpoint(
-    "List explicit public MARD examples (excludes workspace projects)",
+    "List all saved workspace pattern metadata, including imports",
     undefined,
     { security: [] },
   ),
 };
 paths["/examples/{id}"] = {
   parameters: [id],
-  get: endpoint("Read public example metadata", undefined, { security: [] }),
+  get: endpoint("Read current saved pattern metadata", undefined, { security: [] }),
 };
 paths["/examples/{id}/preview.svg"] = {
   parameters: [id],
-  get: endpoint("Read public example vector preview", undefined, {
+  get: endpoint("Read current saved pattern vector preview", undefined, {
     security: [],
     responses: {
       "200": {
