@@ -1,8 +1,8 @@
 # 实际验收结果
 
-测试日期：2026-10-12（Asia/Shanghai）。环境：Windows、Node.js 22.22.2、npm 10.9.7、Microsoft Edge headless、SQLite 3.51.2。
+工作台初始测试日期：2026-10-12（Asia/Shanghai）。新增 MCP 检查为 2026-10-13；环境：Windows、Node.js 22.22.2、npm 10.9.7、Microsoft Edge headless、SQLite 3.51.2。
 
-## 执行结果
+## 工作台既有执行结果
 
 | 检查 | 结果 |
 |---|---|
