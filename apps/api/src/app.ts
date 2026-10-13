@@ -29,6 +29,7 @@ import { openapi, editSchema } from "./openapi";
 import type { LegacyImportOptions } from "../../../packages/core/src/import-pattern";
 import { createPublicExampleCatalog } from "./public-examples";
 import { registerPublicMcp } from "./public-mcp";
+import { createWorkbenchMcp } from "./workbench-mcp";
 interface Options {
   store?: PatternStore;
   databasePath?: string;
@@ -225,7 +226,8 @@ export async function buildApp(options: Options = {}) {
   app.get(prefix + "/openapi.json", () => openapi);
   app.get(prefix + "/schema.json", () => patternSchema);
   app.get(prefix + "/palettes", () => [{ palette: mard, source: provenance }]);
-  const exampleOrigin = publicOrigin || `http://127.0.0.1:${process.env.PORT || 3001}`;
+  const exampleOrigin =
+    publicOrigin || `http://127.0.0.1:${process.env.PORT || 3001}`;
   const examples = createPublicExampleCatalog(exampleOrigin, store);
   app.get(prefix + "/examples", (_req, reply) => {
     reply.header("Cache-Control", "no-store");
@@ -238,15 +240,13 @@ export async function buildApp(options: Options = {}) {
       const example = examples.get(req.params.id);
       return (
         example ??
-        reply
-          .code(404)
-          .send({
-            error: {
-              code: "NOT_FOUND",
-              message: "图纸不存在",
-              path: "/id",
-            },
-          })
+        reply.code(404).send({
+          error: {
+            code: "NOT_FOUND",
+            message: "图纸不存在",
+            path: "/id",
+          },
+        })
       );
     },
   );
@@ -257,18 +257,27 @@ export async function buildApp(options: Options = {}) {
       const preview = examples.preview(req.params.id);
       return preview
         ? reply.type("image/svg+xml; charset=utf-8").send(preview)
-        : reply
-            .code(404)
-            .send({
-              error: {
-                code: "NOT_FOUND",
-                message: "图纸不存在",
-                path: "/id",
-              },
-            });
+        : reply.code(404).send({
+            error: {
+              code: "NOT_FOUND",
+              message: "图纸不存在",
+              path: "/id",
+            },
+          });
     },
   );
-  await registerPublicMcp(app, examples, exampleOrigin);
+  await registerPublicMcp(
+    app,
+    examples,
+    exampleOrigin,
+    createWorkbenchMcp(store, exampleOrigin, (req) => {
+      if (!token) return true;
+      const bearer = req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.slice(7)
+        : "";
+      return !!bearer && safeEqual(bearer, token);
+    }),
+  );
   app.get(prefix + "/patterns", () => store.list());
   app.post<{ Body: unknown }>(prefix + "/patterns", async (req, reply) => {
     const body = req.body;

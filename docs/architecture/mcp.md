@@ -1,5 +1,7 @@
 # Pattern-web MCP 接入
 
+完整工作台的 26 个读写工具已完成代码与本地测试，待本次生产发布确认；当前线上仍为下面两个只读元数据工具。功能列表、写入确认流程、访问模式及部署计划见 [完整工作台接入](../mcp-full-workbench.md)。该完整工具集会复用现有业务服务，取代本文下方本地适配器未公开能力的描述。
+
 现有 Fastify 服务已实现 `POST /mcp`，使用官方 `@modelcontextprotocol/sdk` 1.32.1 的 Stateless Streamable HTTP JSON 传输。2026-10-13 经用户确认已部署并通过公网及官方 SDK 客户端验证；用户 ChatGPT 账号的安装与对话调用尚未验证。发布记录见 `docs/mcp-production-report.md`。
 
 公开工具为 `list_example_patterns`（limit 1..100、offset 非负安全整数）和 `get_example_pattern`（list 返回的 id）。按站点所有者“要公开所有图纸”的明确要求，目录读取 SQLite 工作台所有已保存图纸的当前版本，包含内置、导入、新建和以后上传的图纸，删除后不再返回，不需重启同步。

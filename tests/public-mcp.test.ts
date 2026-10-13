@@ -244,6 +244,7 @@ it("allows trusted CORS and server clients with no Origin while rejecting spoofe
     "https://chatgpt.com",
   );
   expect(preflight.headers["access-control-allow-credentials"]).toBeUndefined();
+  expect(preflight.headers["access-control-allow-headers"]).toContain("Authorization");
   expect(
     (await call(init(), { origin: "https://chatgpt.com" })).statusCode,
   ).toBe(200);
