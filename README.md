@@ -126,3 +126,5 @@ npm run dev
 - Node.js 22 的 `node:sqlite` 会输出实验性提示，本项目已在 Node 22.22.2 实测；数据库接口集中在 `PatternStore`，后续可更换实现。
 
 公开目录、接口边界和 ChatGPT 连接步骤见 `docs/architecture/mcp.md`；不假定账号已安装或能够使用自定义 MCP 插件。生产结果与具体回滚命令见 `docs/mcp-production-report.md`，通用方案见 `docs/mcp-deployment-plan.md`。
+
+完整图纸读写 MCP 工具（新建、导入、修改、排版、色卡、历史、撤销/重做、恢复、删除、统计与文件下载）已实现并通过本地验证，本次生产发布待确认。共 26 个工具，保留已有两个元数据工具；写入先预览并绑定确认凭据，沿用当前免登录共享工作区模式。详见 `docs/mcp-full-workbench.md`。

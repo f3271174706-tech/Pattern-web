@@ -44,14 +44,12 @@ const notification = await fetch(endpoint, {
 assert.equal(notification.status, 202);
 assert.equal(await notification.text(), "");
 const { tools } = await call("tools/list");
-assert.deepEqual(
-  tools.map((t) => t.name),
-  ["list_example_patterns", "get_example_pattern"],
-);
+const legacyNames = ["list_example_patterns", "get_example_pattern"];
+assert(legacyNames.every((name) => tools.some((tool) => tool.name === name)));
 assert(
-  tools.every(
-    (t) => t.annotations.readOnlyHint && !t.annotations.destructiveHint,
-  ),
+  tools
+    .filter((tool) => legacyNames.includes(tool.name))
+    .every((t) => t.annotations.readOnlyHint && !t.annotations.destructiveHint),
 );
 const listed = await call("tools/call", {
   name: "list_example_patterns",
@@ -74,34 +72,50 @@ while (all.length < listed.structuredContent.total) {
   assert(next.structuredContent.examples.length > 0);
   all.push(...next.structuredContent.examples);
 }
-assert.deepEqual(all.map(p => p.id).sort(), workspace.map(p => p.id).sort());
+assert.deepEqual(
+  all.map((p) => p.id).sort(),
+  workspace.map((p) => p.id).sort(),
+);
 for (const pattern of all) {
-  const current = workspace.find(p => p.id === pattern.id);
-  for (const key of ["title", "revision", "width", "height", "beadCount", "colorCount"])
+  const current = workspace.find((p) => p.id === pattern.id);
+  for (const key of [
+    "title",
+    "revision",
+    "width",
+    "height",
+    "beadCount",
+    "colorCount",
+  ])
     assert.equal(pattern[key], current[key]);
-  const result = await call("tools/call", { name: "get_example_pattern", arguments: { id: pattern.id } });
+  const result = await call("tools/call", {
+    name: "get_example_pattern",
+    arguments: { id: pattern.id },
+  });
   assert(!result.isError);
   assert.deepEqual(result.structuredContent.example, pattern);
 }
 // Empty workspaces are valid; exercise get with a missing ID instead.
 const example = all[0];
 if (example) {
-const found = await call("tools/call", {
-  name: "get_example_pattern",
-  arguments: { id: example.id },
-});
-assert(!found.isError);
-assert.deepEqual(found.structuredContent.example, example);
-const publicPreview = new URL(example.previewUrl);
-assert.equal(publicPreview.origin, "https://perler.cloud");
-const preview = await fetch(new URL(publicPreview.pathname, origin), {
-  signal: AbortSignal.timeout(20000),
-});
-assert.equal(preview.status, 200);
-assert.match(preview.headers.get("content-type"), /image\/svg\+xml/);
-assert.match(await preview.text(), /<svg\b/);
+  const found = await call("tools/call", {
+    name: "get_example_pattern",
+    arguments: { id: example.id },
+  });
+  assert(!found.isError);
+  assert.deepEqual(found.structuredContent.example, example);
+  const publicPreview = new URL(example.previewUrl);
+  assert.equal(publicPreview.origin, "https://perler.cloud");
+  const preview = await fetch(new URL(publicPreview.pathname, origin), {
+    signal: AbortSignal.timeout(20000),
+  });
+  assert.equal(preview.status, 200);
+  assert.match(preview.headers.get("content-type"), /image\/svg\+xml/);
+  assert.match(await preview.text(), /<svg\b/);
 } else {
-  const missing = await call("tools/call", { name: "get_example_pattern", arguments: { id: "missing-pattern" } });
+  const missing = await call("tools/call", {
+    name: "get_example_pattern",
+    arguments: { id: "missing-pattern" },
+  });
   assert(missing.isError);
 }
 const rejected = await fetch(endpoint, {
