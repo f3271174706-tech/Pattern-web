@@ -1,0 +1,894 @@
+{
+  "sourceFile": "Mard221_色号HEX_带颜色.xlsx",
+  "sha256": "c9c686326725753868c11d814d0b462b17d3b7d545a6d658ef339f584e6891f9",
+  "sheet": "Mard221",
+  "range": "A2:B222",
+  "colorCount": 221,
+  "authority": "User-supplied workbook, not independently certified against manufacturer",
+  "rows": [
+    {
+      "code": "A1",
+      "sourceRow": 2
+    },
+    {
+      "code": "A2",
+      "sourceRow": 3
+    },
+    {
+      "code": "A3",
+      "sourceRow": 4
+    },
+    {
+      "code": "A4",
+      "sourceRow": 5
+    },
+    {
+      "code": "A5",
+      "sourceRow": 6
+    },
+    {
+      "code": "A6",
+      "sourceRow": 7
+    },
+    {
+      "code": "A7",
+      "sourceRow": 8
+    },
+    {
+      "code": "A8",
+      "sourceRow": 9
+    },
+    {
+      "code": "A9",
+      "sourceRow": 10
+    },
+    {
+      "code": "A10",
+      "sourceRow": 11
+    },
+    {
+      "code": "A11",
+      "sourceRow": 12
+    },
+    {
+      "code": "A12",
+      "sourceRow": 13
+    },
+    {
+      "code": "A13",
+      "sourceRow": 14
+    },
+    {
+      "code": "A14",
+      "sourceRow": 15
+    },
+    {
+      "code": "A15",
+      "sourceRow": 16
+    },
+    {
+      "code": "A16",
+      "sourceRow": 17
+    },
+    {
+      "code": "A17",
+      "sourceRow": 18
+    },
+    {
+      "code": "A18",
+      "sourceRow": 19
+    },
+    {
+      "code": "A19",
+      "sourceRow": 20
+    },
+    {
+      "code": "A20",
+      "sourceRow": 21
+    },
+    {
+      "code": "A21",
+      "sourceRow": 22
+    },
+    {
+      "code": "A22",
+      "sourceRow": 23
+    },
+    {
+      "code": "A23",
+      "sourceRow": 24
+    },
+    {
+      "code": "A24",
+      "sourceRow": 25
+    },
+    {
+      "code": "A25",
+      "sourceRow": 26
+    },
+    {
+      "code": "A26",
+      "sourceRow": 27
+    },
+    {
+      "code": "B1",
+      "sourceRow": 28
+    },
+    {
+      "code": "B2",
+      "sourceRow": 29
+    },
+    {
+      "code": "B3",
+      "sourceRow": 30
+    },
+    {
+      "code": "B4",
+      "sourceRow": 31
+    },
+    {
+      "code": "B5",
+      "sourceRow": 32
+    },
+    {
+      "code": "B6",
+      "sourceRow": 33
+    },
+    {
+      "code": "B7",
+      "sourceRow": 34
+    },
+    {
+      "code": "B8",
+      "sourceRow": 35
+    },
+    {
+      "code": "B9",
+      "sourceRow": 36
+    },
+    {
+      "code": "B10",
+      "sourceRow": 37
+    },
+    {
+      "code": "B11",
+      "sourceRow": 38
+    },
+    {
+      "code": "B12",
+      "sourceRow": 39
+    },
+    {
+      "code": "B13",
+      "sourceRow": 40
+    },
+    {
+      "code": "B14",
+      "sourceRow": 41
+    },
+    {
+      "code": "B15",
+      "sourceRow": 42
+    },
+    {
+      "code": "B16",
+      "sourceRow": 43
+    },
+    {
+      "code": "B17",
+      "sourceRow": 44
+    },
+    {
+      "code": "B18",
+      "sourceRow": 45
+    },
+    {
+      "code": "B19",
+      "sourceRow": 46
+    },
+    {
+      "code": "B20",
+      "sourceRow": 47
+    },
+    {
+      "code": "B21",
+      "sourceRow": 48
+    },
+    {
+      "code": "B22",
+      "sourceRow": 49
+    },
+    {
+      "code": "B23",
+      "sourceRow": 50
+    },
+    {
+      "code": "B24",
+      "sourceRow": 51
+    },
+    {
+      "code": "B25",
+      "sourceRow": 52
+    },
+    {
+      "code": "B26",
+      "sourceRow": 53
+    },
+    {
+      "code": "B27",
+      "sourceRow": 54
+    },
+    {
+      "code": "B28",
+      "sourceRow": 55
+    },
+    {
+      "code": "B29",
+      "sourceRow": 56
+    },
+    {
+      "code": "B30",
+      "sourceRow": 57
+    },
+    {
+      "code": "B31",
+      "sourceRow": 58
+    },
+    {
+      "code": "B32",
+      "sourceRow": 59
+    },
+    {
+      "code": "C1",
+      "sourceRow": 60
+    },
+    {
+      "code": "C2",
+      "sourceRow": 61
+    },
+    {
+      "code": "C3",
+      "sourceRow": 62
+    },
+    {
+      "code": "C4",
+      "sourceRow": 63
+    },
+    {
+      "code": "C5",
+      "sourceRow": 64
+    },
+    {
+      "code": "C6",
+      "sourceRow": 65
+    },
+    {
+      "code": "C7",
+      "sourceRow": 66
+    },
+    {
+      "code": "C8",
+      "sourceRow": 67
+    },
+    {
+      "code": "C9",
+      "sourceRow": 68
+    },
+    {
+      "code": "C10",
+      "sourceRow": 69
+    },
+    {
+      "code": "C11",
+      "sourceRow": 70
+    },
+    {
+      "code": "C12",
+      "sourceRow": 71
+    },
+    {
+      "code": "C13",
+      "sourceRow": 72
+    },
+    {
+      "code": "C14",
+      "sourceRow": 73
+    },
+    {
+      "code": "C15",
+      "sourceRow": 74
+    },
+    {
+      "code": "C16",
+      "sourceRow": 75
+    },
+    {
+      "code": "C17",
+      "sourceRow": 76
+    },
+    {
+      "code": "C18",
+      "sourceRow": 77
+    },
+    {
+      "code": "C19",
+      "sourceRow": 78
+    },
+    {
+      "code": "C20",
+      "sourceRow": 79
+    },
+    {
+      "code": "C21",
+      "sourceRow": 80
+    },
+    {
+      "code": "C22",
+      "sourceRow": 81
+    },
+    {
+      "code": "C23",
+      "sourceRow": 82
+    },
+    {
+      "code": "C24",
+      "sourceRow": 83
+    },
+    {
+      "code": "C25",
+      "sourceRow": 84
+    },
+    {
+      "code": "C26",
+      "sourceRow": 85
+    },
+    {
+      "code": "C27",
+      "sourceRow": 86
+    },
+    {
+      "code": "C28",
+      "sourceRow": 87
+    },
+    {
+      "code": "C29",
+      "sourceRow": 88
+    },
+    {
+      "code": "D1",
+      "sourceRow": 89
+    },
+    {
+      "code": "D2",
+      "sourceRow": 90
+    },
+    {
+      "code": "D3",
+      "sourceRow": 91
+    },
+    {
+      "code": "D4",
+      "sourceRow": 92
+    },
+    {
+      "code": "D5",
+      "sourceRow": 93
+    },
+    {
+      "code": "D6",
+      "sourceRow": 94
+    },
+    {
+      "code": "D7",
+      "sourceRow": 95
+    },
+    {
+      "code": "D8",
+      "sourceRow": 96
+    },
+    {
+      "code": "D9",
+      "sourceRow": 97
+    },
+    {
+      "code": "D10",
+      "sourceRow": 98
+    },
+    {
+      "code": "D11",
+      "sourceRow": 99
+    },
+    {
+      "code": "D12",
+      "sourceRow": 100
+    },
+    {
+      "code": "D13",
+      "sourceRow": 101
+    },
+    {
+      "code": "D14",
+      "sourceRow": 102
+    },
+    {
+      "code": "D15",
+      "sourceRow": 103
+    },
+    {
+      "code": "D16",
+      "sourceRow": 104
+    },
+    {
+      "code": "D17",
+      "sourceRow": 105
+    },
+    {
+      "code": "D18",
+      "sourceRow": 106
+    },
+    {
+      "code": "D19",
+      "sourceRow": 107
+    },
+    {
+      "code": "D20",
+      "sourceRow": 108
+    },
+    {
+      "code": "D21",
+      "sourceRow": 109
+    },
+    {
+      "code": "D22",
+      "sourceRow": 110
+    },
+    {
+      "code": "D23",
+      "sourceRow": 111
+    },
+    {
+      "code": "D24",
+      "sourceRow": 112
+    },
+    {
+      "code": "D25",
+      "sourceRow": 113
+    },
+    {
+      "code": "D26",
+      "sourceRow": 114
+    },
+    {
+      "code": "E1",
+      "sourceRow": 115
+    },
+    {
+      "code": "E2",
+      "sourceRow": 116
+    },
+    {
+      "code": "E3",
+      "sourceRow": 117
+    },
+    {
+      "code": "E4",
+      "sourceRow": 118
+    },
+    {
+      "code": "E5",
+      "sourceRow": 119
+    },
+    {
+      "code": "E6",
+      "sourceRow": 120
+    },
+    {
+      "code": "E7",
+      "sourceRow": 121
+    },
+    {
+      "code": "E8",
+      "sourceRow": 122
+    },
+    {
+      "code": "E9",
+      "sourceRow": 123
+    },
+    {
+      "code": "E10",
+      "sourceRow": 124
+    },
+    {
+      "code": "E11",
+      "sourceRow": 125
+    },
+    {
+      "code": "E12",
+      "sourceRow": 126
+    },
+    {
+      "code": "E13",
+      "sourceRow": 127
+    },
+    {
+      "code": "E14",
+      "sourceRow": 128
+    },
+    {
+      "code": "E15",
+      "sourceRow": 129
+    },
+    {
+      "code": "E16",
+      "sourceRow": 130
+    },
+    {
+      "code": "E17",
+      "sourceRow": 131
+    },
+    {
+      "code": "E18",
+      "sourceRow": 132
+    },
+    {
+      "code": "E19",
+      "sourceRow": 133
+    },
+    {
+      "code": "E20",
+      "sourceRow": 134
+    },
+    {
+      "code": "E21",
+      "sourceRow": 135
+    },
+    {
+      "code": "E22",
+      "sourceRow": 136
+    },
+    {
+      "code": "E23",
+      "sourceRow": 137
+    },
+    {
+      "code": "E24",
+      "sourceRow": 138
+    },
+    {
+      "code": "F1",
+      "sourceRow": 139
+    },
+    {
+      "code": "F2",
+      "sourceRow": 140
+    },
+    {
+      "code": "F3",
+      "sourceRow": 141
+    },
+    {
+      "code": "F4",
+      "sourceRow": 142
+    },
+    {
+      "code": "F5",
+      "sourceRow": 143
+    },
+    {
+      "code": "F6",
+      "sourceRow": 144
+    },
+    {
+      "code": "F7",
+      "sourceRow": 145
+    },
+    {
+      "code": "F8",
+      "sourceRow": 146
+    },
+    {
+      "code": "F9",
+      "sourceRow": 147
+    },
+    {
+      "code": "F10",
+      "sourceRow": 148
+    },
+    {
+      "code": "F11",
+      "sourceRow": 149
+    },
+    {
+      "code": "F12",
+      "sourceRow": 150
+    },
+    {
+      "code": "F13",
+      "sourceRow": 151
+    },
+    {
+      "code": "F14",
+      "sourceRow": 152
+    },
+    {
+      "code": "F15",
+      "sourceRow": 153
+    },
+    {
+      "code": "F16",
+      "sourceRow": 154
+    },
+    {
+      "code": "F17",
+      "sourceRow": 155
+    },
+    {
+      "code": "F18",
+      "sourceRow": 156
+    },
+    {
+      "code": "F19",
+      "sourceRow": 157
+    },
+    {
+      "code": "F20",
+      "sourceRow": 158
+    },
+    {
+      "code": "F21",
+      "sourceRow": 159
+    },
+    {
+      "code": "F22",
+      "sourceRow": 160
+    },
+    {
+      "code": "F23",
+      "sourceRow": 161
+    },
+    {
+      "code": "F24",
+      "sourceRow": 162
+    },
+    {
+      "code": "F25",
+      "sourceRow": 163
+    },
+    {
+      "code": "G1",
+      "sourceRow": 164
+    },
+    {
+      "code": "G2",
+      "sourceRow": 165
+    },
+    {
+      "code": "G3",
+      "sourceRow": 166
+    },
+    {
+      "code": "G4",
+      "sourceRow": 167
+    },
+    {
+      "code": "G5",
+      "sourceRow": 168
+    },
+    {
+      "code": "G6",
+      "sourceRow": 169
+    },
+    {
+      "code": "G7",
+      "sourceRow": 170
+    },
+    {
+      "code": "G8",
+      "sourceRow": 171
+    },
+    {
+      "code": "G9",
+      "sourceRow": 172
+    },
+    {
+      "code": "G10",
+      "sourceRow": 173
+    },
+    {
+      "code": "G11",
+      "sourceRow": 174
+    },
+    {
+      "code": "G12",
+      "sourceRow": 175
+    },
+    {
+      "code": "G13",
+      "sourceRow": 176
+    },
+    {
+      "code": "G14",
+      "sourceRow": 177
+    },
+    {
+      "code": "G15",
+      "sourceRow": 178
+    },
+    {
+      "code": "G16",
+      "sourceRow": 179
+    },
+    {
+      "code": "G17",
+      "sourceRow": 180
+    },
+    {
+      "code": "G18",
+      "sourceRow": 181
+    },
+    {
+      "code": "G19",
+      "sourceRow": 182
+    },
+    {
+      "code": "G20",
+      "sourceRow": 183
+    },
+    {
+      "code": "G21",
+      "sourceRow": 184
+    },
+    {
+      "code": "H1",
+      "sourceRow": 185
+    },
+    {
+      "code": "H2",
+      "sourceRow": 186
+    },
+    {
+      "code": "H3",
+      "sourceRow": 187
+    },
+    {
+      "code": "H4",
+      "sourceRow": 188
+    },
+    {
+      "code": "H5",
+      "sourceRow": 189
+    },
+    {
+      "code": "H6",
+      "sourceRow": 190
+    },
+    {
+      "code": "H7",
+      "sourceRow": 191
+    },
+    {
+      "code": "H8",
+      "sourceRow": 192
+    },
+    {
+      "code": "H9",
+      "sourceRow": 193
+    },
+    {
+      "code": "H10",
+      "sourceRow": 194
+    },
+    {
+      "code": "H11",
+      "sourceRow": 195
+    },
+    {
+      "code": "H12",
+      "sourceRow": 196
+    },
+    {
+      "code": "H13",
+      "sourceRow": 197
+    },
+    {
+      "code": "H14",
+      "sourceRow": 198
+    },
+    {
+      "code": "H15",
+      "sourceRow": 199
+    },
+    {
+      "code": "H16",
+      "sourceRow": 200
+    },
+    {
+      "code": "H17",
+      "sourceRow": 201
+    },
+    {
+      "code": "H18",
+      "sourceRow": 202
+    },
+    {
+      "code": "H19",
+      "sourceRow": 203
+    },
+    {
+      "code": "H20",
+      "sourceRow": 204
+    },
+    {
+      "code": "H21",
+      "sourceRow": 205
+    },
+    {
+      "code": "H22",
+      "sourceRow": 206
+    },
+    {
+      "code": "H23",
+      "sourceRow": 207
+    },
+    {
+      "code": "M1",
+      "sourceRow": 208
+    },
+    {
+      "code": "M2",
+      "sourceRow": 209
+    },
+    {
+      "code": "M3",
+      "sourceRow": 210
+    },
+    {
+      "code": "M4",
+      "sourceRow": 211
+    },
+    {
+      "code": "M5",
+      "sourceRow": 212
+    },
+    {
+      "code": "M6",
+      "sourceRow": 213
+    },
+    {
+      "code": "M7",
+      "sourceRow": 214
+    },
+    {
+      "code": "M8",
+      "sourceRow": 215
+    },
+    {
+      "code": "M9",
+      "sourceRow": 216
+    },
+    {
+      "code": "M10",
+      "sourceRow": 217
+    },
+    {
+      "code": "M11",
+      "sourceRow": 218
+    },
+    {
+      "code": "M12",
+      "sourceRow": 219
+    },
+    {
+      "code": "M13",
+      "sourceRow": 220
+    },
+    {
+      "code": "M14",
+      "sourceRow": 221
+    },
+    {
+      "code": "M15",
+      "sourceRow": 222
+    }
+  ]
+}

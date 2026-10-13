@@ -1,0 +1,10 @@
+node_modules
+npm-cache
+data
+tmp
+output
+dist
+test-results
+playwright-report
+.git
+.env

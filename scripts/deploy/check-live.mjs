@@ -1,0 +1,37 @@
+import {chromium} from '@playwright/test';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+const origin='https://perler.cloud';
+const env=Object.fromEntries((await readFile('C:/Users/32711/.codex/private/perler-workbench/workbench.env','utf8')).split('\n').filter(l=>l.includes('=')).map(l=>{const i=l.indexOf('=');return[l.slice(0,i),l.slice(i+1)];}));
+assert.equal(env.PUBLIC_ORIGIN,origin);
+const expected=JSON.parse(await readFile(new URL('../../examples/palettes/mard221.json',import.meta.url),'utf8'));
+const browser=await chromium.launch({channel:process.platform==='win32'?'msedge':undefined,headless:true});
+const context=await browser.newContext({viewport:{width:1600,height:1040}}),page=await context.newPage();
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+let id;
+try{
+  const opened=await page.goto(origin+'/?deployment-check='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+  assert.equal(opened.status(),200,'Public site must return HTTP 200');
+  assert.equal(new URL(page.url()).origin,origin,'Login must stay on the authorized site');
+  await page.getByLabel('访问密钥',{exact:true}).fill(env.API_TOKEN);
+  await page.getByRole('button',{name:'打开工作台',exact:true}).click();
+  await page.getByRole('heading',{name:'窗台小花园 · MARD',exact:true}).waitFor({timeout:20000});
+  await page.getByText('服务器工作区',{exact:true}).waitFor();
+  const colors=await page.locator('.color-grid button').evaluateAll(buttons=>buttons.map(b=>({code:b.title.split(' · ')[0],hex:'#'+b.querySelector('.swatch').style.backgroundColor.match(/\d+/g).slice(0,3).map(v=>Number(v).toString(16).padStart(2,'0')).join('').toUpperCase()})));
+  assert.equal(colors.length,221);for(const color of colors)assert.equal(color.hex,expected.colors[color.code].hex.toUpperCase());
+  const presets=await (await page.request.get(origin+'/api/v1/palettes')).json();assert.deepEqual(presets[0].palette,expected);
+  const projects=await (await page.request.get(origin+'/api/v1/patterns')).json();assert.equal(projects.length,2);assert(projects.every(p=>p.palette==='MARD-221'));
+  await mkdir('output/deploy',{recursive:true});await page.getByRole('button',{name:'适应画布',exact:true}).click();await page.screenshot({path:'output/deploy/live-workbench.png'});
+  const p=JSON.parse(await readFile(new URL('../../examples/mard-demo-3x2.json',import.meta.url),'utf8'));id='public-browser-'+randomUUID();p.patternId=id;p.title='公网浏览器验收（临时）';
+  const created=await page.request.post(origin+'/api/v1/patterns',{data:p});assert.equal(created.status(),201);await page.reload();await page.getByRole('button').filter({hasText:p.title}).click();await page.getByRole('heading',{name:p.title,exact:true}).waitFor();
+  await page.getByLabel('X 坐标',{exact:true}).fill('1');await page.getByLabel('Y 坐标',{exact:true}).fill('1');await page.getByRole('button',{name:'定位',exact:true}).click();await page.getByLabel('目标色号',{exact:true}).selectOption('H2');await page.getByRole('button',{name:'修改选中格子',exact:true}).click();await page.locator('.revision-chip').filter({hasText:'v2'}).waitFor();
+  const saved=await (await page.request.get(origin+'/api/v1/patterns/'+id)).json();assert.equal(saved.pattern.grid.cells[0][0],'H2');assert.equal(saved.pattern.revision,2);
+  await page.getByRole('button',{name:'SVG',exact:true}).click();let downloading=page.waitForEvent('download',{timeout:60000});await page.getByRole('dialog').getByRole('button',{name:'导出文件',exact:true}).click();await (await downloading).saveAs('output/deploy/live-smoke-v2.svg');
+  await page.getByRole('button',{name:'导出 PDF',exact:true}).click();downloading=page.waitForEvent('download',{timeout:60000});await page.getByRole('dialog').getByRole('button',{name:'导出文件',exact:true}).click();await (await downloading).saveAs('output/deploy/live-smoke-v2.pdf');
+  await page.reload();await page.locator('.revision-chip').filter({hasText:'v2'}).waitFor();
+  assert.deepEqual(errors,[]);
+  const deleted=await page.request.delete(origin+'/api/v1/patterns/'+id);assert.equal(deleted.status(),200);id=undefined;
+  const report={origin,verifiedAt:new Date().toISOString(),paletteColors:colors.length,exactHexMatches:true,defaultProjects:projects.length,checks:['HTTPS browser login','all 221 actual rendered swatches match Excel-derived HEX','public GUI edit saved to server','SVG and vector PDF downloaded over HTTPS','refresh preserves revision 2','no browser JavaScript errors']};
+  await writeFile('output/deploy/public-verification.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+}finally{if(id)await page.request.delete(origin+'/api/v1/patterns/'+id).catch(()=>{});await browser.close();}

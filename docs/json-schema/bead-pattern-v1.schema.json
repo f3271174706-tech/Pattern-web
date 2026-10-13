@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beadpattern.local/schemas/bead-pattern-v1.json",
+  "title": "BeadPattern v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "patternId", "revision", "title", "grid", "palette", "layout"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "patternId": { "type": "string", "pattern": "^[a-zA-Z0-9_-]{1,100}$" },
+    "revision": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+    "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "source": { "type": "object", "additionalProperties": false, "properties": { "producer": { "type": "string", "maxLength": 200 } } },
+    "grid": {
+      "type": "object", "additionalProperties": false,
+      "required": ["width", "height", "origin", "coordinateBase", "cells"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 500 },
+        "origin": { "const": "top-left" }, "coordinateBase": { "const": 1 },
+        "cells": { "type": "array", "minItems": 1, "maxItems": 500, "items": { "type": "array", "minItems": 1, "maxItems": 500, "items": { "anyOf": [{ "type": "null" }, { "type": "string", "pattern": "^[a-zA-Z0-9_-]{1,32}$" }] } } }
+      }
+    },
+    "palette": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version", "colors"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "version": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "colors": { "type": "object", "minProperties": 1, "maxProperties": 1000,
+          "propertyNames": { "pattern": "^[a-zA-Z0-9_-]{1,32}$" },
+          "additionalProperties": { "type": "object", "additionalProperties": false, "required": ["name", "hex"], "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 100 }, "hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" } } }
+        }
+      }
+    },
+    "layout": {
+      "type": "object", "additionalProperties": false, "required": ["cellSizeMm", "board", "coordinates", "gridLines", "paper"],
+      "properties": {
+        "cellSizeMm": { "type": "number", "minimum": 1, "maximum": 20 },
+        "board": { "type": "object", "additionalProperties": false, "required": ["width", "height"], "properties": { "width": { "type": "integer", "minimum": 1, "maximum": 500 }, "height": { "type": "integer", "minimum": 1, "maximum": 500 }, "show": { "type": "boolean" }, "showLabels": { "type": "boolean" } } },
+        "coordinates": { "type": "object", "additionalProperties": false, "required": ["show", "intervalX", "intervalY"], "properties": { "show": { "type": "boolean" }, "intervalX": { "type": "integer", "minimum": 1, "maximum": 500 }, "intervalY": { "type": "integer", "minimum": 1, "maximum": 500 } } },
+        "gridLines": { "type": "object", "additionalProperties": false, "required": ["show"], "properties": { "show": { "type": "boolean" }, "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }, "widthMm": { "type": "number", "minimum": 0.02, "maximum": 1 } } },
+        "showColorCodes": { "type": "boolean" },
+        "paper": { "type": "object", "additionalProperties": false, "required": ["size", "orientation", "marginMm"], "properties": {
+          "size": { "enum": ["A4", "A3", "custom"] }, "orientation": { "enum": ["portrait", "landscape"] },
+          "marginMm": { "type": "number", "minimum": 0, "maximum": 50 },
+          "widthMm": { "type": "number", "minimum": 100, "maximum": 1000 }, "heightMm": { "type": "number", "minimum": 100, "maximum": 1000 },
+          "pagination": { "enum": ["auto", "board"] }
+        }, "allOf": [{ "if": { "properties": { "size": { "const": "custom" } } }, "then": { "properties": { "widthMm": {}, "heightMm": {} }, "required": ["widthMm", "heightMm"] } }] }
+      }
+    }
+  }
+}

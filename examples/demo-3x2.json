@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "patternId": "demo-001",
+  "revision": 1,
+  "title": "3×2 验收示例",
+  "source": {
+    "producer": "ChatGPT Work"
+  },
+  "grid": {
+    "width": 3,
+    "height": 2,
+    "origin": "top-left",
+    "coordinateBase": 1,
+    "cells": [
+      [
+        "C01",
+        "C01",
+        null
+      ],
+      [
+        "C02",
+        "C01",
+        "C02"
+      ]
+    ]
+  },
+  "palette": {
+    "id": "custom",
+    "version": "v1",
+    "colors": {
+      "C01": {
+        "name": "示例颜色1",
+        "hex": "#D9A066"
+      },
+      "C02": {
+        "name": "示例颜色2",
+        "hex": "#8B5544"
+      },
+      "WHITE": {
+        "name": "白色",
+        "hex": "#FFFFFF"
+      }
+    }
+  },
+  "layout": {
+    "cellSizeMm": 5,
+    "board": {
+      "width": 29,
+      "height": 29,
+      "show": true,
+      "showLabels": false
+    },
+    "coordinates": {
+      "show": true,
+      "intervalX": 5,
+      "intervalY": 5
+    },
+    "gridLines": {
+      "show": true,
+      "color": "#B7C0CB",
+      "widthMm": 0.08
+    },
+    "showColorCodes": false,
+    "paper": {
+      "size": "A4",
+      "orientation": "portrait",
+      "marginMm": 10,
+      "pagination": "board"
+    }
+  }
+}

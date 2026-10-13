@@ -1,0 +1,50 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {randomUUID} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {PDFDocument,PDFRawStream,PDFName,decodePDFRawStream} from 'pdf-lib';
+const base=process.argv[2]??'http://127.0.0.1:18050';
+const envPath=process.argv[3]??'/etc/perler-cloud/workbench.env';
+const env=Object.fromEntries((await readFile(envPath,'utf8')).split('\n').filter(l=>l.includes('=')).map(l=>{const i=l.indexOf('=');return[l.slice(0,i),l.slice(i+1)];}));
+assert(['127.0.0.1','localhost'].includes(new URL(base).hostname)||new URL(base).origin===env.PUBLIC_ORIGIN,'Unapproved verification host');
+const token=env.API_TOKEN,publicAccess=env.PUBLIC_ACCESS==='true';if(!publicAccess)assert(token&&token.length>=32,'Missing protected server credential');
+const root=fileURLToPath(new URL('../../',import.meta.url));
+const expectedPalette=JSON.parse(await readFile(root+'examples/palettes/mard221.json','utf8'));
+const initial=JSON.parse(await readFile(root+'examples/mard-demo-3x2.json','utf8'));
+const id='deployment-smoke-'+randomUUID();initial.patternId=id;initial.title='部署验证（临时）';
+const api=base+'/api/v1',checks=[];
+async function call(path,method='GET',body,expected=200,authorized=true){
+  const res=await fetch(api+path,{method,headers:{...(authorized?{Authorization:'Bearer '+token}:{}),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
+  assert.equal(res.status,expected,`${method} ${path}: HTTP ${res.status}`);return res;
+}
+let created=false;
+try{
+  assert.equal((await (await call('/health','GET',undefined,200,false)).json()).status,'ok');
+  await call('/patterns','GET',undefined,publicAccess?200:401,false);checks.push(publicAccess?'public access without login verified':'authentication enforced');
+  const presets=await (await call('/palettes')).json();assert.deepEqual(presets[0].palette,expectedPalette);assert.equal(Object.keys(presets[0].palette.colors).length,221);checks.push('all 221 MARD mappings match source');
+  const projects=await (await call('/patterns')).json();
+  await call('/patterns','POST',initial,201);created=true;
+  const path='/patterns/'+id,request={baseRevision:1,idempotencyKey:randomUUID(),operations:[{type:'set_cell',x:1,y:1,expectedColor:'A1',newColor:'G7'}]};
+  const preview=await (await call(path+'/edits/preview','POST',request)).json();assert.equal(preview.changedCells,1);assert.equal((await (await call(path)).json()).pattern.revision,1);
+  const committed=await (await call(path+'/edits/commit','POST',request)).json();assert.equal(committed.pattern.revision,2);assert.equal(committed.pattern.grid.cells[0][0],'G7');
+  assert.deepEqual(await (await call(path+'/edits/commit','POST',request)).json(),committed);
+  await call(path+'/edits/commit','POST',{baseRevision:1,operations:[{type:'set_cell',x:2,y:1,newColor:null}]},409);
+  await call(path+'/edits/commit','POST',{baseRevision:2,operations:[{type:'set_cell',x:2,y:1,newColor:null},{type:'set_cell',x:1,y:1,expectedColor:'A1',newColor:null}]},409);
+  assert.deepEqual((await (await call(path)).json()).pattern,committed.pattern);checks.push('preview, atomic edits, expectedColor, conflict, idempotency');
+  assert.equal((await (await call(path+'/undo','POST',{baseRevision:2})).json()).pattern.revision,3);
+  assert.equal((await (await call(path+'/redo','POST',{baseRevision:3})).json()).pattern.revision,4);
+  const restored=await (await call(path+'/revisions/1/restore','POST',{baseRevision:4})).json();assert.equal(restored.pattern.revision,5);assert.deepEqual(restored.pattern.grid.cells,initial.grid.cells);checks.push('persisted undo, redo and restore');
+  const stats=await (await call(path+'/stats?revision=5')).json();assert.equal(stats.beadCount,5);assert.equal(stats.emptyCount,1);assert.equal(stats.colors.reduce((n,c)=>n+c.count,0),5);
+  const svgResponse=await call(path+'/exports/svg?revision=5'),svg=await svgResponse.text();assert.equal([...svg.matchAll(/id="bead-/g)].length,5);assert.equal(svgResponse.headers.get('x-pattern-revision'),'5');
+  const pdfResponse=await call(path+'/exports/pdf?revision=5'),bytes=new Uint8Array(await pdfResponse.arrayBuffer());assert.equal(pdfResponse.headers.get('x-pattern-digest'),svgResponse.headers.get('x-pattern-digest'));
+  const pdf=await PDFDocument.load(bytes);assert.equal(pdf.getPageCount(),2);
+  const objects=[...pdf.context.enumerateIndirectObjects()].map(([,o])=>o);
+  assert(!objects.some(o=>o instanceof PDFRawStream&&o.dict.get(PDFName.of('Subtype'))===PDFName.of('Image')));
+  const files=objects.filter(o=>o instanceof PDFRawStream&&o.dict.get(PDFName.of('Type'))===PDFName.of('EmbeddedFile')).map(o=>JSON.parse(Buffer.from(decodePDFRawStream(o).decode()).toString()));
+  assert.equal(files.find(f=>f.beads).beads.length,5);assert.equal(files.find(f=>f.beads).revision,5);
+  await call(path+'/stats?revision=5&format=csv');checks.push('exact stats, CSV, revision-matched vector SVG and PDF');
+  await call(path,'DELETE');created=false;
+  const report={verifiedAt:new Date().toISOString(),base,checks,pdfBytes:bytes.length,initialProjects:projects.length};
+  await mkdir('/var/lib/perler-cloud/workbench/verification',{recursive:true});await writeFile('/var/lib/perler-cloud/workbench/verification/latest-smoke.json',JSON.stringify(report,null,2));
+  console.log(JSON.stringify(report));
+}finally{if(created)await call('/patterns/'+id,'DELETE').catch(()=>{});}

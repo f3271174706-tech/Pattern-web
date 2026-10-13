@@ -1,0 +1,10 @@
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {PDFDocument,PDFRawStream,PDFName,decodePDFRawStream} from 'pdf-lib';
+const pdf=await PDFDocument.load(await readFile('output/deploy/live-smoke-v2.pdf'));
+assert.equal(pdf.getPageCount(),2);assert(pdf.getTitle().endsWith(' v2'));
+const objects=[...pdf.context.enumerateIndirectObjects()].map(([,o])=>o);
+assert(!objects.some(o=>o instanceof PDFRawStream&&o.dict.get(PDFName.of('Subtype'))===PDFName.of('Image')));
+const files=objects.filter(o=>o instanceof PDFRawStream&&o.dict.get(PDFName.of('Type'))===PDFName.of('EmbeddedFile')).map(o=>JSON.parse(Buffer.from(decodePDFRawStream(o).decode()).toString()));
+const manifest=files.find(o=>o.beads);assert.equal(manifest.revision,2);assert.equal(manifest.beads.length,5);assert(manifest.beads.some(b=>b.x===1&&b.y===1&&b.code==='H2'&&b.hex==='#FEFFFF'));
+console.log(JSON.stringify({publicPdfPages:2,revision:2,vectorBeads:5,imageXObjects:0,editedMardH2:'#FEFFFF'}));

@@ -1,0 +1,14 @@
+services:
+  workbench:
+    build: .
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      API_TOKEN: "${API_TOKEN:?Set a secret of at least 32 characters}"
+      PUBLIC_ORIGIN: "${PUBLIC_ORIGIN:?Set the HTTPS origin}"
+      DATABASE_PATH: /app/data/workbench.sqlite
+    volumes:
+      - bead-data:/app/data
+    restart: unless-stopped
+volumes:
+  bead-data:
