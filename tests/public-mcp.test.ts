@@ -274,6 +274,7 @@ it("keeps authenticated editing APIs intact while publishing all current pattern
   expect((await app.inject("/api/v1/patterns")).statusCode).toBe(401);
   const examples = await app.inject("/api/v1/examples");
   expect(examples.statusCode).toBe(200);
+  expect(examples.headers["cache-control"]).toBe("no-store");
   expect(examples.json().examples).toHaveLength(3);
   expect((await app.inject("/api/v1/examples/private-import")).statusCode).toBe(
     200,
@@ -282,6 +283,7 @@ it("keeps authenticated editing APIs intact while publishing all current pattern
     "/api/v1/examples/mard-demo-3x2/preview.svg",
   );
   expect(preview.statusCode).toBe(200);
+  expect(preview.headers["cache-control"]).toBe("no-store");
   expect(preview.body).toContain("<svg");
   expect(preview.body.match(/id="bead-/g)).toHaveLength(5);
 });
@@ -296,6 +298,8 @@ it("reflects later imports, edits and deletions without restarting, and never re
   expect(listed.total).toBe(4);
   const read = () => rpc("tools/call", { name: "get_example_pattern", arguments: { id: uploaded.patternId } });
   const found = (await read()).json().result.structuredContent.example;
+  const metadata = await app.inject(`/api/v1/examples/${uploaded.patternId}`);
+  expect(metadata.headers["cache-control"]).toBe("no-store");
   expect(found.title).toBe(uploaded.title);
   expect(Object.keys(found).sort()).toEqual(["id", "title", "revision", "width", "height", "beadCount", "colorCount", "paletteId", "paletteVersion", "url", "previewUrl"].sort());
   const svg = await app.inject(`/api/v1/examples/${uploaded.patternId}/preview.svg`);

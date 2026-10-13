@@ -227,10 +227,14 @@ export async function buildApp(options: Options = {}) {
   app.get(prefix + "/palettes", () => [{ palette: mard, source: provenance }]);
   const exampleOrigin = publicOrigin || `http://127.0.0.1:${process.env.PORT || 3001}`;
   const examples = createPublicExampleCatalog(exampleOrigin, store);
-  app.get(prefix + "/examples", () => ({ examples: examples.list() }));
+  app.get(prefix + "/examples", (_req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return { examples: examples.list() };
+  });
   app.get<{ Params: { id: string } }>(
     prefix + "/examples/:id",
     (req, reply) => {
+      reply.header("Cache-Control", "no-store");
       const example = examples.get(req.params.id);
       return (
         example ??
@@ -249,6 +253,7 @@ export async function buildApp(options: Options = {}) {
   app.get<{ Params: { id: string } }>(
     prefix + "/examples/:id/preview.svg",
     (req, reply) => {
+      reply.header("Cache-Control", "no-store");
       const preview = examples.preview(req.params.id);
       return preview
         ? reply.type("image/svg+xml; charset=utf-8").send(preview)
