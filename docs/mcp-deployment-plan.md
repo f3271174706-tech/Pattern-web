@@ -1,4 +1,6 @@
-# Pattern-web MCP：待确认的生产变更
+# Pattern-web MCP：生产变更与回滚方案
+
+2026-10-13：本方案已经用户确认并执行，当前发布为 `20261013-144501-mard221-workbench`，原发布作为回滚点保留。下文只读检查为发布前记录；实际结果与具体回滚命令见 `docs/mcp-production-report.md`。
 
 目标仓库为 [Pattern-web](https://github.com/f3271174706-tech/Pattern-web)。废弃的 Perler.fzp.me 和其 PR #1 不参与部署；旧仓库审核草稿未合并、未推送、未部署。
 

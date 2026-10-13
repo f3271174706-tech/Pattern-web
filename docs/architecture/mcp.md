@@ -1,6 +1,6 @@
 # Pattern-web MCP 接入
 
-现有 Fastify 服务已实现 `POST /mcp`，使用官方 `@modelcontextprotocol/sdk` 1.32.1 的 Stateless Streamable HTTP JSON 传输。本次生产发布等待用户确认，未登录或连接用户 ChatGPT 账号。
+现有 Fastify 服务已实现 `POST /mcp`，使用官方 `@modelcontextprotocol/sdk` 1.32.1 的 Stateless Streamable HTTP JSON 传输。2026-10-13 经用户确认已部署并通过公网及官方 SDK 客户端验证；用户 ChatGPT 账号的安装与对话调用尚未验证。发布记录见 `docs/mcp-production-report.md`。
 
 公开工具为 `list_example_patterns`（limit 1..100、offset 非负安全整数）和 `get_example_pattern`（list 返回的 id）。只返回两张内置 MARD 示例的标题、尺寸、豆数、颜色数、色卡版本及公开 SVG 链接。目录独立于 SQLite 用户图纸和原始档案；不返回矩阵、密钥、Cookie、私有路径或图像字节。
 
@@ -10,7 +10,7 @@
 
 Origin 允许部署站点、https://chatgpt.com、https://chat.openai.com 和无 Origin 的服务器客户端，拒绝 null 和伪造域名。每 IP 每分钟限 360 条 RPC；不信任代理时回环代理的调用共享限额。
 
-## ChatGPT 连接：发布后执行
+## ChatGPT 连接：服务已上线，账号内执行
 
 1. 打开 ChatGPT Plugins，选择加号 → Add custom MCP server。
 2. 名称填 Pattern-web，Server URL 填 `https://perler.cloud/mcp`。

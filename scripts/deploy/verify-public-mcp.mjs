@@ -66,14 +66,14 @@ const found = await call("tools/call", {
 });
 assert(!found.isError);
 assert.deepEqual(found.structuredContent.example, example);
-assert.equal(
-  (
-    await fetch(new URL(example.previewUrl, origin), {
-      signal: AbortSignal.timeout(20000),
-    })
-  ).status,
-  200,
-);
+const publicPreview = new URL(example.previewUrl);
+assert.equal(publicPreview.origin, "https://perler.cloud");
+const preview = await fetch(new URL(publicPreview.pathname, origin), {
+  signal: AbortSignal.timeout(20000),
+});
+assert.equal(preview.status, 200);
+assert.match(preview.headers.get("content-type"), /image\/svg\+xml/);
+assert.match(await preview.text(), /<svg\b/);
 const rejected = await fetch(endpoint, {
   method: "POST",
   headers: {
